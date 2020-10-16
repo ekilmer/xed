@@ -21,6 +21,7 @@
 
 import sys
 import os
+import importlib.util
 
 # Assume mbuild is next to the current source directory
 # put mbuild on the import path
@@ -42,11 +43,13 @@ def fatal(m):
     sys.exit(1)
 
 def try_mbuild_import():
-    try:
-        import mbuild
+    # Don't actually call 'import' in case of cloned mbuild project in current
+    # directory
+    spec = importlib.util.find_spec('mbuild')
+    # Check for a loader to make sure it's not a namespace package
+    if spec and spec.loader:
         return True
-    except:
-        return False
+    return False
     
 def find_mbuild_import():
     if try_mbuild_import():
@@ -90,10 +93,8 @@ def work():
     else:
         fatal("Need python version 3.4 or later.")
         
-    try:
-        find_mbuild_import()
-    except:
-        fatal("mbuild import failed")
+    find_mbuild_import()
+
     import xed_mbuild
     import xed_build_common
     if 0:
